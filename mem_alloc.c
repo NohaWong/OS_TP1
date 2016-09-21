@@ -18,6 +18,45 @@ mem_free_block_t *first_free;
 #if defined(FIRST_FIT)
 
 /* code specific to first fit strategy can be inserted here */
+char *find_free_block(int size) {
+    char *result = NULL;
+    mem_free_block_t *node = first_free;
+
+    while(node != NULL) {
+        printf("free mem: %d, trying: %d\n", node->size, size);
+
+        if (node->size >= size) {
+            result = (char*) (node + sizeof(mem_free_block_t));
+
+            // there's enough space to create metadata for the remaining block
+
+            if (node->size >= size + sizeof(mem_free_block_t)) {
+                mem_free_block_t *new_block = node + sizeof(mem_free_block_t) + size;
+                printf("---\n");
+                printf("address difference: %lu\n", ULONG((char *) new_block - memory));
+                printf("remaining mem: %d\n", node->size - sizeof(mem_free_block_t) - size);
+
+                // TODO: segfault here
+                new_block->size = node->size - sizeof(mem_free_block_t) - size;
+                new_block->next = node->next;
+
+                if (node == first_free) {
+                    first_free = new_block;
+                }
+            }
+
+            break;
+        }
+        node = node->next;
+    }
+
+    if (result == NULL) {
+        print_error_alloc(size);
+        exit(0);
+    }
+
+    return result;
+}
 
 #elif defined(BEST_FIT)
 
@@ -45,12 +84,16 @@ void memory_init(void){
     atexit(run_at_exit);
 
     /* .... */
+    first_free = (mem_free_block_t*) memory;
+    first_free->size = MEMORY_SIZE - sizeof(mem_free_block_t);
+    first_free->next = NULL;
 }
 
 char *memory_alloc(int size){
 
     /* .... */
-    
+    return find_free_block(size);
+        
 }
 
 void memory_free(char *p){
@@ -119,6 +162,7 @@ int main(int argc, char **argv){
   //a=realloc(a, 20); 
   memory_free(a);
 
+  print_free_blocks();
 
   a = memory_alloc(10);
   memory_free(a);

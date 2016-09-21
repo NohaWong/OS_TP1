@@ -1,2 +1,4 @@
 *.o
-
+mem_alloc_test
+mem_shell
+mem_shell_sim
