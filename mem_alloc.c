@@ -111,9 +111,11 @@ void memory_free(char *p){
 
     if(freed<node)
     {
-      freed->next=node;
-      first_free=freed;
-      return;
+        freed->prev = NULL;
+        node->prev = freed;
+        freed->next=node;
+        first_free=freed;
+        return;
     }
     while(node != NULL && (node->next == NULL || node->next > freed))
     {
@@ -122,8 +124,13 @@ void memory_free(char *p){
 
     if(node != NULL)
     {
-      freed->next=node->next;
-      node->next=freed;
+      //if(freed+sizeof(mem_free_block_t)+freed->size == node->next)
+
+        freed->prev = node;
+        if(node->next != NULL)
+            node->next->prev = freed;
+        freed->next=node->next;
+        node->next=freed;
     }
     else
     {
