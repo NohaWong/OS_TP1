@@ -41,6 +41,8 @@ char *find_free_block(int size) {
 
                 if (node->prev == NULL) {
                     first_free = new_block;
+                } else {
+                    node->prev->next=node->next;
                 }
             }
             else
@@ -50,9 +52,11 @@ char *find_free_block(int size) {
                     node->next->prev = NULL;
                 } else {
                     node->prev->next = node->next;
-                    node->next->prev = node->prev;
+                    if(node->next != NULL)
+                        node->next->prev = node->prev;
                 }
             }
+
 
             break;
         }
@@ -115,9 +119,10 @@ void memory_free(char *p){
         node->prev = freed;
         freed->next=node;
         first_free=freed;
+        // to do merge
         return;
     }
-    while(node != NULL && (node->next == NULL || node->next > freed))
+    while(node != NULL && !(node->next == NULL || node->next > freed))
     {
       node= node->next;
     }
@@ -131,6 +136,28 @@ void memory_free(char *p){
             node->next->prev = freed;
         freed->next=node->next;
         node->next=freed;
+        mem_free_block_t *prev = freed->prev;
+        mem_free_block_t *next = freed->next;
+
+
+        if(freed+freed->size+sizeof(mem_free_block_t) == next)
+        {
+            freed->next = next->next;
+            if(next->next != NULL)
+                next->next->prev=freed;
+            freed->size += next->size + sizeof(mem_free_block_t);
+        }
+        if(prev+prev->size+sizeof(mem_free_block_t) == freed)
+        {
+            prev->next=freed->next;
+            if(freed->next != NULL)
+                next->prev = prev;
+            prev->size += freed->size + sizeof(mem_free_block_t);
+        }
+
+
+
+
     }
     else
     {
