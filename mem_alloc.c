@@ -25,13 +25,13 @@ char *find_free_block(int size) {
 
     while(node != NULL) {
         if (node->size >= size) {
-            result = (char*) (node + sizeof(mem_free_block_t));
+            result = (char*) node + sizeof(mem_free_block_t);
 
             // there's enough space to create metadata for the remaining block
             if (node->size >= size + sizeof(mem_free_block_t)) {
                 // must cast node into (void*) (or char*) first so that addition of pointer would increase memory address by 1 for each +1 operation
                 // without casting, the increment will be sizeof(mem_free_block_t) bytes for each +1 operation, hence reaching out of bound of memory array soon
-                mem_free_block_t *new_block = (mem_free_block_t*) ((void*) node + sizeof(mem_free_block_t) + size);
+                mem_free_block_t *new_block = (mem_free_block_t*) ((char*) node + sizeof(mem_free_block_t) + size);
 
                 new_block->size = node->size - sizeof(mem_free_block_t) - size;
                 new_block->prev = node->prev;
@@ -105,7 +105,9 @@ void memory_init(void){
 char *memory_alloc(int size){
 
     /* .... */
-    return find_free_block(size);
+    char *addr = find_free_block(size);
+    print_alloc_info(addr, size);
+    return addr;
 
 }
 
@@ -162,7 +164,7 @@ void memory_free(char *p){
     else
     {
 
-      //bad pointer TO DO after
+      // TODO safety check
       printf("****bad pointer here\n");
       exit(1);
     }
@@ -176,6 +178,9 @@ void memory_free(char *p){
     //     node->next=node->next->next;
     //   }
     // }
+
+    // TODO determine if this print_free_info should be called with p
+    print_free_info(p);
 
 }
 
