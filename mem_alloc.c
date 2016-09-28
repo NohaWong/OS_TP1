@@ -19,6 +19,7 @@ mem_free_block_t *first_free;
 
 /* code specific to first fit strategy can be inserted here */
 char *find_free_block(int size) {
+    // TODO what if size <= 0
     char *result = NULL;
     mem_free_block_t *node = first_free;
 
