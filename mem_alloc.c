@@ -42,13 +42,13 @@ char *find_free_block(int size) {
                 if (node->prev == NULL) {
                     first_free = new_block;
                 } else {
-                    node->prev->next=node->next;
+                    node->prev->next = node->next;
                 }
             }
             else
             {
                 if (node->prev == NULL) {
-                    first_free=node->next;
+                    first_free = node->next;
                     node->next->prev = NULL;
                 } else {
                     node->prev->next = node->next;
@@ -115,70 +115,63 @@ void memory_free(char *p){
     mem_free_block_t *node = first_free;
     mem_free_block_t *freed = (mem_free_block_t*) (p - sizeof(mem_free_block_t));
 
-    if(freed<node)
+    mem_free_block_t *prev_node, *next_node;
+
+    // find the block to be free and bring it back to the list
+    // reintegrate a block to the list must preserve the ascending order by address of the list
+    if (freed < node)
     {
         freed->prev = NULL;
         node->prev = freed;
-        freed->next=node;
-        first_free=freed;
-        // to do merge
-        print_free_info(p);
-        return;
-    }
-    while(node != NULL && !(node->next == NULL || node->next > freed))
-    {
-      node= node->next;
-    }
+        freed->next = node;
+        first_free = freed;
 
-    if(node != NULL)
-    {
-      //if(freed+sizeof(mem_free_block_t)+freed->size == node->next)
-
-        freed->prev = node;
-        if(node->next != NULL)
-            node->next->prev = freed;
-        freed->next=node->next;
-        node->next=freed;
-        mem_free_block_t *prev = freed->prev;
-        mem_free_block_t *next = freed->next;
-
-
-        if(freed+freed->size+sizeof(mem_free_block_t) == next)
+        prev_node = NULL;
+        next_node = freed->next;
+    } else {
+        while (node != NULL && !(node->next == NULL || node->next > freed))
         {
-            freed->next = next->next;
-            if(next->next != NULL)
-                next->next->prev=freed;
-            freed->size += next->size + sizeof(mem_free_block_t);
-        }
-        if(prev+prev->size+sizeof(mem_free_block_t) == freed)
-        {
-            prev->next=freed->next;
-            if(freed->next != NULL)
-                next->prev = prev;
-            prev->size += freed->size + sizeof(mem_free_block_t);
+            node= node->next;
         }
 
+        if (node != NULL)
+        {
+            freed->prev = node;
+            if(node->next != NULL) {
+                node->next->prev = freed;
+            }
+            freed->next = node->next;
+            node->next = freed;
 
-
-
+            prev_node = freed->prev;
+            next_node = freed->next;
+        }
+        else
+        {
+            // TODO safety check
+            printf("****bad pointer here\n");
+            exit(1);
+        }
     }
-    else
+
+    // do the merging
+    if ((char*) freed + freed->size + sizeof(mem_free_block_t) == (char*) next_node) // if next_node is NULL, this condition will always fail
     {
-
-      // TODO safety check
-      printf("****bad pointer here\n");
-      exit(1);
+        freed->next = next_node->next;
+        if (next_node->next != NULL) {
+            next_node->next->prev = freed;
+        }
+        freed->size += next_node->size + sizeof(mem_free_block_t);
     }
 
-    // else
-    // {
-    //   node->size+=(p - sizeof(mem_free_block_t))->size + sizeof(mem_free_block_t);
-    //   if(node + sizeof(mem_free_block_t)+node->size == node->next)
-    //   {
-    //     node->size+=sizeof(mem_free_block_t)+node->next->size;
-    //     node->next=node->next->next;
-    //   }
-    // }
+    if (prev_node != NULL && (char*) prev_node + prev_node->size + sizeof(mem_free_block_t) == (char*) freed)
+    {
+        prev_node->next = freed->next;
+        if (freed->next != NULL) {
+            next_node->prev = prev_node;
+        }
+        prev_node->size += freed->size + sizeof(mem_free_block_t);
+    }
 
     print_free_info(p);
 
