@@ -1,4 +1,11 @@
+*.dSYM/
+*.~
+*.swp
 *.o
+*.out
+*.out.expected
+.DS_Store
 mem_alloc_test
 mem_shell
 mem_shell_sim
+Thumbs.db
