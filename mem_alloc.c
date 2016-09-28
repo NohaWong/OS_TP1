@@ -9,7 +9,7 @@
 char memory[MEMORY_SIZE];
 
 /* Pointer to the first free block in the memory */
-mem_free_block_t *first_free; 
+mem_free_block_t *first_free;
 
 
 #define ULONG(x)((long unsigned int)(x))
@@ -34,7 +34,7 @@ char *find_free_block(int size) {
                 mem_free_block_t *new_block = node + sizeof(mem_free_block_t) + size;
                 printf("---\n");
                 printf("address difference: %lu\n", ULONG((char *) new_block - memory));
-                printf("remaining mem: %d\n", node->size - sizeof(mem_free_block_t) - size);
+                printf("remaining mem: %lu\n", node->size - sizeof(mem_free_block_t) - size);
 
                 // TODO: segfault here
                 new_block->size = node->size - sizeof(mem_free_block_t) - size;
@@ -72,7 +72,7 @@ void run_at_exit(void)
 {
     /* function called when the programs exits */
     /* To be used to display memory leaks informations */
-    
+
     /* ... */
 }
 
@@ -93,23 +93,23 @@ char *memory_alloc(int size){
 
     /* .... */
     return find_free_block(size);
-        
+
 }
 
 void memory_free(char *p){
 
     /* ... */
-    
+
 }
 
 
 void print_alloc_info(char *addr, int size){
   if(addr){
-      fprintf(stderr, "ALLOC at : %lu (%d byte(s))\n", 
+      fprintf(stderr, "ALLOC at : %lu (%d byte(s))\n",
               ULONG(addr - memory), size);
   }
   else{
-      fprintf(stderr, "Warning, system is out of memory\n"); 
+      fprintf(stderr, "Warning, system is out of memory\n");
   }
 }
 
@@ -123,7 +123,7 @@ void print_free_info(char *addr){
     }
 }
 
-void print_error_alloc(int size) 
+void print_error_alloc(int size)
 {
     fprintf(stderr, "ALLOC error : can't allocate %d bytes\n", size);
 }
@@ -134,8 +134,8 @@ void print_info(void) {
 
 
 void print_free_blocks(void) {
-    mem_free_block_t *current; 
-    fprintf(stderr, "Begin of free block list :\n"); 
+    mem_free_block_t *current;
+    fprintf(stderr, "Begin of free block list :\n");
     for(current = first_free; current != NULL; current = current->next)
         fprintf(stderr, "Free block at address %lu, size %u\n", ULONG((char*)current - memory), current->size);
 }
@@ -149,17 +149,17 @@ int main(int argc, char **argv){
 
   /* The main can be changed, it is *not* involved in tests */
   memory_init();
-  print_info(); 
+  print_info();
   print_free_blocks();
-  int i ; 
+  int i ;
   for( i = 0; i < 10; i++){
     char *b = memory_alloc(rand()%8);
-    memory_free(b); 
+    memory_free(b);
     print_free_blocks();
   }
 
   char * a = memory_alloc(15);
-  //a=realloc(a, 20); 
+  //a=realloc(a, 20);
   memory_free(a);
 
   print_free_blocks();
@@ -170,4 +170,4 @@ int main(int argc, char **argv){
   fprintf(stderr,"%lu\n",(long unsigned int) (memory_alloc(9)));
   return EXIT_SUCCESS;
 }
-#endif 
+#endif
