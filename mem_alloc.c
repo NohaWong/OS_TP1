@@ -31,7 +31,9 @@ char *find_free_block(int size) {
             // there's enough space to create metadata for the remaining block
 
             if (node->size >= size + sizeof(mem_free_block_t)) {
-                mem_free_block_t *new_block = node + sizeof(mem_free_block_t) + size;
+                // must cast node into (void*) (or char*) first so that addition of pointer would increase memory address by 1 for each +1 operation
+                // without casting, the increment will be sizeof(mem_free_block_t) bytes for each +1 operation, hence reaching out of bound of memory array soon
+                mem_free_block_t *new_block = (mem_free_block_t*) ((void*) node + sizeof(mem_free_block_t) + size);
                 printf("---\n");
                 printf("address difference: %lu\n", ULONG((char *) new_block - memory));
                 printf("remaining mem: %lu\n", node->size - sizeof(mem_free_block_t) - size);
