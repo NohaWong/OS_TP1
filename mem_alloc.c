@@ -39,12 +39,20 @@ char *find_free_block(int size) {
                 printf("address difference: %lu\n", ULONG((char *) new_block - memory));
                 printf("remaining mem: %lu\n", node->size - sizeof(mem_free_block_t) - size);
 
-                // TODO: segfault here
                 new_block->size = node->size - sizeof(mem_free_block_t) - size;
                 new_block->next = node->next;
+                //update of the allocated space
+                node->size = size;
 
                 if (node == first_free) {
                     first_free = new_block;
+                }
+            }
+            else
+            {
+                if(node == first_free)
+                {
+                    first_free=node->next;
                 }
             }
 
@@ -75,7 +83,7 @@ void run_at_exit(void)
 {
     /* function called when the programs exits */
     /* To be used to display memory leaks informations */
-
+  printf("there's a problem\n");
     /* ... */
 }
 
@@ -100,8 +108,41 @@ char *memory_alloc(int size){
 }
 
 void memory_free(char *p){
+    mem_free_block_t *node = first_free;
+    mem_free_block_t *freed = (mem_free_block_t*) p-sizeof(mem_free_block_t);
 
-    /* ... */
+    if(freed<node)
+    {
+      freed->next=node;
+      first_free=freed;
+      return;
+    }
+    while(node != NULL && (node->next == NULL || node->next > freed))
+    {
+      node= node->next;
+    }
+    
+    if(node != NULL)
+    {
+      freed->next=node->next;
+      node->next=freed;
+    }
+    else
+    {
+
+      //bad pointer TO DO after 
+      exit(1);
+    }
+    
+    // else
+    // {
+    //   node->size+=(p - sizeof(mem_free_block_t))->size + sizeof(mem_free_block_t);
+    //   if(node + sizeof(mem_free_block_t)+node->size == node->next)
+    //   {
+    //     node->size+=sizeof(mem_free_block_t)+node->next->size;
+    //     node->next=node->next->next;
+    //   }
+    // }
 
 }
 
