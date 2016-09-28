@@ -1,7 +1,8 @@
 #ifndef   	_MEM_ALLOC_TYPES_H_
 #define   	_MEM_ALLOC_TYPES_H_
 
-#define MEM_ALIGNMENT 4
+// set MEM_ALIGNMENT to higher than 1 to consider address padding
+#define MEM_ALIGNMENT 1
 
 
 /* Structure declaration for a free block */
