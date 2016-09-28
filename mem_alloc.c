@@ -113,7 +113,7 @@ char *memory_alloc(int size){
 
 void memory_free(char *p){
     mem_free_block_t *node = first_free;
-    mem_free_block_t *freed = (mem_free_block_t*) p-sizeof(mem_free_block_t);
+    mem_free_block_t *freed = (mem_free_block_t*) (p - sizeof(mem_free_block_t));
 
     if(freed<node)
     {
@@ -122,6 +122,7 @@ void memory_free(char *p){
         freed->next=node;
         first_free=freed;
         // to do merge
+        print_free_info(p);
         return;
     }
     while(node != NULL && !(node->next == NULL || node->next > freed))
@@ -179,7 +180,6 @@ void memory_free(char *p){
     //   }
     // }
 
-    // TODO determine if this print_free_info should be called with p
     print_free_info(p);
 
 }
