@@ -24,35 +24,33 @@ char *find_free_block(int size) {
     mem_free_block_t *node = first_free;
 
     while(node != NULL) {
-        printf("free mem: %d, trying: %d\n", node->size, size);
-
         if (node->size >= size) {
             result = (char*) (node + sizeof(mem_free_block_t));
 
             // there's enough space to create metadata for the remaining block
-
             if (node->size >= size + sizeof(mem_free_block_t)) {
                 // must cast node into (void*) (or char*) first so that addition of pointer would increase memory address by 1 for each +1 operation
                 // without casting, the increment will be sizeof(mem_free_block_t) bytes for each +1 operation, hence reaching out of bound of memory array soon
                 mem_free_block_t *new_block = (mem_free_block_t*) ((void*) node + sizeof(mem_free_block_t) + size);
-                printf("---\n");
-                printf("address difference: %lu\n", ULONG((char *) new_block - memory));
-                printf("remaining mem: %lu\n", node->size - sizeof(mem_free_block_t) - size);
 
                 new_block->size = node->size - sizeof(mem_free_block_t) - size;
+                new_block->prev = node->prev;
                 new_block->next = node->next;
                 //update of the allocated space
                 node->size = size;
 
-                if (node == first_free) {
+                if (node->prev == NULL) {
                     first_free = new_block;
                 }
             }
             else
             {
-                if(node == first_free)
-                {
+                if (node->prev == NULL) {
                     first_free=node->next;
+                    node->next->prev = NULL;
+                } else {
+                    node->prev->next = node->next;
+                    node->next->prev = node->prev;
                 }
             }
 
@@ -83,7 +81,6 @@ void run_at_exit(void)
 {
     /* function called when the programs exits */
     /* To be used to display memory leaks informations */
-  printf("there's a problem\n");
     /* ... */
 }
 
@@ -97,6 +94,7 @@ void memory_init(void){
     /* .... */
     first_free = (mem_free_block_t*) memory;
     first_free->size = MEMORY_SIZE - sizeof(mem_free_block_t);
+    first_free->prev = NULL;
     first_free->next = NULL;
 }
 
@@ -121,7 +119,7 @@ void memory_free(char *p){
     {
       node= node->next;
     }
-    
+
     if(node != NULL)
     {
       freed->next=node->next;
@@ -130,10 +128,11 @@ void memory_free(char *p){
     else
     {
 
-      //bad pointer TO DO after 
+      //bad pointer TO DO after
+      printf("****bad pointer here\n");
       exit(1);
     }
-    
+
     // else
     // {
     //   node->size+=(p - sizeof(mem_free_block_t))->size + sizeof(mem_free_block_t);

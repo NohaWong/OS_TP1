@@ -7,9 +7,10 @@
 /* Structure declaration for a free block */
 typedef struct mem_free_block{
     int size;
+    struct mem_free_block *prev;
     struct mem_free_block *next;
     /* ...*/
-} mem_free_block_t; 
+} mem_free_block_t;
 
 /* Structure declaration for a used block */
 typedef mem_free_block_t mem_used_block_t;
