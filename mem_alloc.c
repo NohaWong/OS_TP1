@@ -15,6 +15,41 @@ mem_free_block_t *first_free;
 #define ULONG(x)((long unsigned int)(x))
 #define max(x,y) (x>y?x:y)
 
+char *assign_block(mem_free_block_t *node, int size) {
+    char* result = (char*) node + sizeof(mem_free_block_t);
+
+    // there's enough space to create metadata for the remaining block
+    if (node->size >= size + sizeof(mem_free_block_t)) {
+        // must cast node into (void*) (or char*) first so that addition of pointer would increase memory address by 1 for each +1 operation
+        // without casting, the increment will be sizeof(mem_free_block_t) bytes for each +1 operation, hence reaching out of bound of memory array soon
+        mem_free_block_t *new_block = (mem_free_block_t*) ((char*) node + sizeof(mem_free_block_t) + size);
+
+        new_block->size = node->size - sizeof(mem_free_block_t) - size;
+        new_block->prev = node->prev;
+        new_block->next = node->next;
+        //update of the allocated space
+        node->size = size;
+
+        if (node->prev == NULL) {
+            first_free = new_block;
+        } else {
+            node->prev->next = node->next;
+        }
+    } else {
+        if (node->prev == NULL) {
+            first_free = node->next;
+            node->next->prev = NULL;
+        } else {
+            node->prev->next = node->next;
+            if (node->next != NULL) {
+                node->next->prev = node->prev;
+            }
+        }
+    }
+
+    return result;
+}
+
 #if defined(FIRST_FIT)
 
 /* code specific to first fit strategy can be inserted here */
@@ -25,39 +60,7 @@ char *find_free_block(int size) {
 
     while(node != NULL) {
         if (node->size >= size) {
-            result = (char*) node + sizeof(mem_free_block_t);
-
-            // there's enough space to create metadata for the remaining block
-            if (node->size >= size + sizeof(mem_free_block_t)) {
-                // must cast node into (void*) (or char*) first so that addition of pointer would increase memory address by 1 for each +1 operation
-                // without casting, the increment will be sizeof(mem_free_block_t) bytes for each +1 operation, hence reaching out of bound of memory array soon
-                mem_free_block_t *new_block = (mem_free_block_t*) ((char*) node + sizeof(mem_free_block_t) + size);
-
-                new_block->size = node->size - sizeof(mem_free_block_t) - size;
-                new_block->prev = node->prev;
-                new_block->next = node->next;
-                //update of the allocated space
-                node->size = size;
-
-                if (node->prev == NULL) {
-                    first_free = new_block;
-                } else {
-                    node->prev->next = node->next;
-                }
-            }
-            else
-            {
-                if (node->prev == NULL) {
-                    first_free = node->next;
-                    node->next->prev = NULL;
-                } else {
-                    node->prev->next = node->next;
-                    if(node->next != NULL)
-                        node->next->prev = node->prev;
-                }
-            }
-
-
+            result = assign_block(node, size);
             break;
         }
         node = node->next;
@@ -75,8 +78,6 @@ char *find_free_block(int size) {
 
 /* code specific to best fit strategy can be inserted here */
 char *find_free_block(int size) {
-    printf("best\n");
-    char *result = NULL;
     mem_free_block_t *node = first_free;
     mem_free_block_t *memo = NULL;
 
@@ -92,34 +93,7 @@ char *find_free_block(int size) {
         exit(0);
     }
 
-    result = (char*) memo + sizeof(mem_free_block_t);
-    if (memo->size >= size + sizeof(mem_free_block_t)) {
-        mem_free_block_t *new_block = (mem_free_block_t*) ((char*) memo + sizeof(mem_free_block_t) + size);
-
-        new_block->size = memo->size - sizeof(mem_free_block_t) - size;
-        new_block->prev = memo->prev;
-        new_block->next = memo->next;
-        //update of the allocated space
-        memo->size = size;
-
-        if (memo->prev == NULL) {
-            first_free = new_block;
-        } else {
-            memo->prev->next = memo->next;
-        }
-    } else {
-        if (memo->prev == NULL) {
-            first_free = memo->next;
-            memo->next->prev = NULL;
-        } else {
-            memo->prev->next = memo->next;
-            if(memo->next != NULL) {
-                memo->next->prev = memo->prev;
-            }
-        }
-    }
-
-    return result;
+    return assign_block(memo, size);
 }
 
 #elif defined(WORST_FIT)
