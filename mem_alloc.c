@@ -99,6 +99,24 @@ char *find_free_block(int size) {
 #elif defined(WORST_FIT)
 
 /* code specific to worst fit strategy can be inserted here */
+char *find_free_block(int size) {
+    mem_free_block_t *node = first_free;
+    mem_free_block_t *memo = NULL;
+
+    while (node != NULL) {
+        if (node->size >= size && (memo == NULL || node->size > memo->size)) {
+            memo = node;
+        }
+        node = node->next;
+    }
+
+    if (memo == NULL) {
+        print_error_alloc(size);
+        exit(0);
+    }
+
+    return assign_block(memo, size);
+}
 
 #endif
 
