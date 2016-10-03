@@ -38,7 +38,9 @@ char *assign_block(mem_free_block_t *node, int size) {
     } else {
         if (node->prev == NULL) {
             first_free = node->next;
-            node->next->prev = NULL;
+            if (node->next != NULL) {
+                node->next->prev = NULL;
+            }
         } else {
             node->prev->next = node->next;
             if (node->next != NULL) {
