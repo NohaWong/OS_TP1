@@ -74,6 +74,53 @@ char *find_free_block(int size) {
 #elif defined(BEST_FIT)
 
 /* code specific to best fit strategy can be inserted here */
+char *find_free_block(int size) {
+    printf("best\n");
+    char *result = NULL;
+    mem_free_block_t *node = first_free;
+    mem_free_block_t *memo = NULL;
+
+    while (node != NULL) {
+        if (node->size >= size && (memo == NULL || node->size < memo->size)) {
+            memo = node;
+        }
+        node = node->next;
+    }
+
+    if (memo == NULL) {
+        print_error_alloc(size);
+        exit(0);
+    }
+
+    result = (char*) memo + sizeof(mem_free_block_t);
+    if (memo->size >= size + sizeof(mem_free_block_t)) {
+        mem_free_block_t *new_block = (mem_free_block_t*) ((char*) memo + sizeof(mem_free_block_t) + size);
+
+        new_block->size = memo->size - sizeof(mem_free_block_t) - size;
+        new_block->prev = memo->prev;
+        new_block->next = memo->next;
+        //update of the allocated space
+        memo->size = size;
+
+        if (memo->prev == NULL) {
+            first_free = new_block;
+        } else {
+            memo->prev->next = memo->next;
+        }
+    } else {
+        if (memo->prev == NULL) {
+            first_free = memo->next;
+            memo->next->prev = NULL;
+        } else {
+            memo->prev->next = memo->next;
+            if(memo->next != NULL) {
+                memo->next->prev = memo->prev;
+            }
+        }
+    }
+
+    return result;
+}
 
 #elif defined(WORST_FIT)
 
