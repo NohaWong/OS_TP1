@@ -160,8 +160,14 @@ void memory_free(char *p){
 
     // find the block to be free and bring it back to the list
     // reintegrate a block to the list must preserve the ascending order by address of the list
-    if (freed < node)
-    {
+    if (first_free == NULL) {
+        freed->prev = NULL;
+        freed->next = NULL;
+        first_free = freed;
+
+        prev_node = NULL;
+        next_node = NULL;
+    } else if (freed < node) {
         freed->prev = NULL;
         node->prev = freed;
         freed->next = node;
