@@ -202,6 +202,10 @@ void memory_free(char *p){
     }
 
     // do the merging
+    // FIXME assuming that a block is allocated with internal fragmentation,
+    // i.e. we got 26 bytes left but the request is for just 24 bytes, the 2 extra bytes isn't big enough for a metadata block,
+    // then we free the allocated block immediately next to it, the leftover bytes due to previous internal fragmentation
+    // aren't coalerced into the new free block
     if ((char*) freed + freed->size + sizeof(mem_free_block_t) == (char*) next_node) // if next_node is NULL, this condition will always fail
     {
         freed->next = next_node->next;
