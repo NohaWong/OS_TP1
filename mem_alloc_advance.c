@@ -59,7 +59,7 @@ char *assign_block(mem_free_block_t *node, int size) {
 
 void update_allocated_list(mem_free_block_t *block){
     mem_free_block_t *node = first_allocated;
-    
+
     if(first_allocated == NULL){
         first_allocated = block;
         block->next = NULL;
@@ -85,9 +85,11 @@ char *find_free_block(int size) {
     // TODO what if size <= 0
     char *result = NULL;
     mem_free_block_t *node = first_free;
+    mem_free_block_t *memo;
 
     while(node != NULL) {
         if (node->size >= size) {
+            memo = node;
             result = assign_block(node, size);
             break;
         }
@@ -99,6 +101,7 @@ char *find_free_block(int size) {
         exit(0);
     }
 
+    update_allocated_list(memo);
     return result;
 }
 
@@ -121,7 +124,7 @@ char *find_free_block(int size) {
         print_error_alloc(size);
         exit(0);
     }
-   
+
     addr = assign_block(memo, size);
     update_allocated_list(memo);
     return addr;
@@ -133,6 +136,7 @@ char *find_free_block(int size) {
 char *find_free_block(int size) {
     mem_free_block_t *node = first_free;
     mem_free_block_t *memo = NULL;
+    char *addr;
 
     while (node != NULL) {
         if (node->size >= size && (memo == NULL || node->size > memo->size)) {
@@ -146,7 +150,9 @@ char *find_free_block(int size) {
         exit(0);
     }
 
-    return assign_block(memo, size);
+    addr = assign_block(memo, size);
+    update_allocated_list(memo);
+    return addr;
 }
 
 #endif
