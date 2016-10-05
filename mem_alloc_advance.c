@@ -57,26 +57,36 @@ char *assign_block(mem_free_block_t *node, int size) {
     return result;
 }
 
+/**
+ * insert a block to the allocated list
+ * maintain that the allocated list is ordered by the address increasingly
+ */
 void update_allocated_list(mem_free_block_t *block){
     mem_free_block_t *node = first_allocated;
 
-    if(first_allocated == NULL){
+    if (first_allocated == NULL) {
         first_allocated = block;
         block->next = NULL;
         return;
     }
-    if(block < first_allocated){
+
+    if (block < first_allocated) {
         block->next = first_allocated;
         first_allocated = block;
         return;
     }
-    while(node < block && !(node->next == NULL || node->next > block)) {
+
+    while (node < block && !(node->next == NULL || node->next > block)) {
         node = node->next;
     }
     block->next = node->next;
     node->next = block;
 }
 
+/**
+ * get the block with lower address amongst 2 blocks
+ * NULL is treated as highest address possible
+ */
 mem_free_block_t* get_lower_address_block(mem_free_block_t* node1, mem_free_block_t* node2) {
     if (node1 == NULL) {
         return node2;
@@ -89,6 +99,10 @@ mem_free_block_t* get_lower_address_block(mem_free_block_t* node1, mem_free_bloc
     return node1 < node2 ? node1 : node2;
 }
 
+/**
+ * check for memory consistency by walking through allocated and free list
+ * if the total size of block & metadata is not equal to MEMORY_SIZE, yield an error
+ */
 void check_memory_consistency() {
     mem_free_block_t *free_node = first_free;
     mem_free_block_t *allocated_node = first_allocated;
@@ -98,7 +112,7 @@ void check_memory_consistency() {
 
     node = get_lower_address_block(free_node, allocated_node);
     if (node == NULL) {
-        fprintf(stderr, "Total memory calculated is 0 != %d, exiting\n", MEMORY_SIZE);
+        fprintf(stderr, "ERROR: Total memory calculated is 0 != %d, exiting\n", MEMORY_SIZE);
         exit(1);
     }
 
@@ -121,7 +135,7 @@ void check_memory_consistency() {
     } while(node != NULL);
 
     if (sum != MEMORY_SIZE) {
-        fprintf(stderr, "Total memory calculated is %d != %d, exiting\n", sum, MEMORY_SIZE);
+        fprintf(stderr, "ERROR: Total memory calculated is %d != %d, exiting\n", sum, MEMORY_SIZE);
         exit(1);
     }
 }
@@ -211,8 +225,8 @@ void run_at_exit(void)
     /* function called when the programs exits */
     /* To be used to display memory leaks informations */
     /* ... */
-    if(first_free->size+sizeof(mem_free_block_t)!=MEMORY_SIZE){
-        fprintf(stderr, "there is (are) a pointer whose is not freed before exiting.\n");
+    if (first_free->size + sizeof(mem_free_block_t) != MEMORY_SIZE) {
+        fprintf(stderr, "WARNING: There is some allocated memory that is not made free before exiting.\n");
     }
 }
 
@@ -240,19 +254,22 @@ char *memory_alloc(int size){
 
 }
 
-int is_allocated_pointer(char* addr){
+/**
+ * check if a given address is pointing to the head of a memory block that was allocated before
+ */
+int is_allocated_pointer(char* addr) {
     mem_used_block_t *prev = NULL;
     mem_used_block_t *node = first_allocated;
-    while(node != NULL && ((char*) node+sizeof(mem_free_block_t) != addr)){
+    while (node != NULL && ((char*) node + sizeof(mem_free_block_t) != addr)) {
         prev = node;
         node = node->next;
     }
-    if(node == NULL){
+    if (node == NULL) {
         return 0;
-    }else{
-        if(node == first_allocated){
+    } else {
+        if (node == first_allocated) {
             first_allocated = node->next;
-        }else{
+        } else {
             prev->next = node->next;
         }
         return 1;
@@ -266,12 +283,13 @@ void memory_free(char *p){
 
     mem_free_block_t *prev_node, *next_node;
 
+    if (!is_allocated_pointer(p)) {
+        fprintf(stderr, "WARNING: the provided address [%p] is not associated to an allocated memory block. Failed to free.\n", p);
+        return;
+    }
+
     // find the block to be free and bring it back to the list
     // reintegrate a block to the list must preserve the ascending order by address of the list
-    if(!is_allocated_pointer(p)){
-        fprintf(stderr, "bad pointer for free.\n");
-        return ;
-    }
     if (first_free == NULL) {
         freed->prev = NULL;
         freed->next = NULL;
@@ -288,13 +306,11 @@ void memory_free(char *p){
         prev_node = NULL;
         next_node = freed->next;
     } else {
-        while (node != NULL && !(node->next == NULL || node->next > freed))
-        {
+        while (node != NULL && !(node->next == NULL || node->next > freed)) {
             node= node->next;
         }
 
-        if (node != NULL)
-        {
+        if (node != NULL) {
             freed->prev = node;
             if(node->next != NULL) {
                 node->next->prev = freed;
@@ -304,12 +320,9 @@ void memory_free(char *p){
 
             prev_node = freed->prev;
             next_node = freed->next;
-        }
-        else
-        {
-            // TODO safety check
-            printf("****bad pointer here\n");
-            exit(1);
+        } else {
+            fprintf(stderr, "WARNING: the provided address [%p] is not associated to an allocated memory block. Failed to free.\n", p);
+            return;
         }
     }
 
