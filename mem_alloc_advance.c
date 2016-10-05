@@ -10,6 +10,7 @@ char memory[MEMORY_SIZE];
 
 /* Pointer to the first free block in the memory */
 mem_free_block_t *first_free;
+mem_used_block_t *first_allocated;
 
 
 #define ULONG(x)((long unsigned int)(x))
@@ -86,6 +87,7 @@ char *find_free_block(int size) {
 char *find_free_block(int size) {
     mem_free_block_t *node = first_free;
     mem_free_block_t *memo = NULL;
+    char *addr;
 
     while (node != NULL) {
         if (node->size >= size && (memo == NULL || node->size < memo->size)) {
@@ -98,8 +100,11 @@ char *find_free_block(int size) {
         print_error_alloc(size);
         exit(0);
     }
-
-    return assign_block(memo, size);
+   
+    addr = assign_block(memo, size);
+    memo->next=first_allocated;
+    first_allocated = memo;
+    return addr;
 }
 
 #elif defined(WORST_FIT)
@@ -131,6 +136,9 @@ void run_at_exit(void)
     /* function called when the programs exits */
     /* To be used to display memory leaks informations */
     /* ... */
+    if(first_free->size+sizeof(mem_free_block_t)!=MEMORY_SIZE){
+        fprintf(stderr, "there is (are) a pointer whose is not freed before exiting.\n");
+    }
 }
 
 
@@ -156,6 +164,25 @@ char *memory_alloc(int size){
 
 }
 
+int is_allocated_pointer(char* addr){
+    mem_used_block_t *prev = NULL;
+    mem_used_block_t *node = first_allocated;
+    while(node != NULL && ((char*) node+sizeof(mem_free_block_t) != addr)){
+        prev = node;
+        node = node->next;
+    }
+    if(node == NULL){
+        return 0;
+    }else{
+        if(node == first_allocated){
+            first_allocated = node->next;
+        }else{
+            prev->next = node->next;
+        }
+        return 1;
+    }
+}
+
 void memory_free(char *p){
     mem_free_block_t *node = first_free;
     mem_free_block_t *freed = (mem_free_block_t*) (p - sizeof(mem_free_block_t));
@@ -164,6 +191,10 @@ void memory_free(char *p){
 
     // find the block to be free and bring it back to the list
     // reintegrate a block to the list must preserve the ascending order by address of the list
+    if(!is_allocated_pointer(p)){
+        fprintf(stderr, "bad pointer for free.\n");
+        return ;
+    }
     if (first_free == NULL) {
         freed->prev = NULL;
         freed->next = NULL;
@@ -282,8 +313,9 @@ int main(int argc, char **argv){
   print_info();
   print_free_blocks();
   int i ;
+  char *b;
   for( i = 0; i < 10; i++){
-    char *b = memory_alloc(rand()%8);
+    b = memory_alloc(rand()%8);
     memory_free(b);
     print_free_blocks();
   }
@@ -295,9 +327,11 @@ int main(int argc, char **argv){
   print_free_blocks();
 
   a = memory_alloc(10);
+  a = a+1;
+
   memory_free(a);
 
-  fprintf(stderr,"%lu\n",(long unsigned int) (memory_alloc(9)));
+  //fprintf(stderr,"%lu\n",(long unsigned int) (memory_alloc(9)));
   return EXIT_SUCCESS;
 }
 #endif
