@@ -77,6 +77,55 @@ void update_allocated_list(mem_free_block_t *block){
     node->next = block;
 }
 
+mem_free_block_t* get_lower_address_block(mem_free_block_t* node1, mem_free_block_t* node2) {
+    if (node1 == NULL) {
+        return node2;
+    }
+
+    if (node2 == NULL) {
+        return node1;
+    }
+
+    return node1 < node2 ? node1 : node2;
+}
+
+void check_memory_consistency() {
+    mem_free_block_t *free_node = first_free;
+    mem_free_block_t *allocated_node = first_allocated;
+
+    mem_free_block_t *node, *next_node;
+    int sum = 0;
+
+    node = get_lower_address_block(free_node, allocated_node);
+    if (node == NULL) {
+        fprintf(stderr, "Total memory calculated is 0 != %d, exiting\n", MEMORY_SIZE);
+        exit(1);
+    }
+
+    do {
+        if (node == free_node && free_node != NULL) {
+            free_node = free_node->next;
+        }
+        if (node == allocated_node && allocated_node != NULL) {
+            allocated_node = allocated_node->next;
+        }
+
+        next_node = get_lower_address_block(free_node, allocated_node);
+        if (next_node != NULL) {
+            sum += (void*) next_node - (void*) node;
+        } else {
+            sum += node->size + (int) sizeof(mem_free_block_t);
+        }
+
+        node = next_node;
+    } while(node != NULL);
+
+    if (sum != MEMORY_SIZE) {
+        fprintf(stderr, "Total memory calculated is %d != %d, exiting\n", sum, MEMORY_SIZE);
+        exit(1);
+    }
+}
+
 
 #if defined(FIRST_FIT)
 
@@ -184,6 +233,7 @@ void memory_init(void){
 char *memory_alloc(int size){
 
     /* .... */
+    check_memory_consistency();
     char *addr = find_free_block(size);
     print_alloc_info(addr, size);
     return addr;
@@ -210,6 +260,7 @@ int is_allocated_pointer(char* addr){
 }
 
 void memory_free(char *p){
+    check_memory_consistency();
     mem_free_block_t *node = first_free;
     mem_free_block_t *freed = (mem_free_block_t*) (p - sizeof(mem_free_block_t));
 
