@@ -30,10 +30,10 @@ char *assign_block(mem_free_block_t *node, int size) {
         //update of the allocated space
         node->size = size;
 
-        if (node->prev == NULL) {
+        if (new_block->prev == NULL) {
             first_free = new_block;
         } else {
-            node->prev->next = node->next;
+            new_block->prev->next = new_block;
         }
     } else {
         if (node->prev == NULL) {
