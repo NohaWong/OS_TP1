@@ -57,6 +57,27 @@ char *assign_block(mem_free_block_t *node, int size) {
     return result;
 }
 
+void update_allocated_list(mem_free_block_t *block){
+    mem_free_block_t *node = first_allocated;
+    
+    if(first_allocated == NULL){
+        first_allocated = block;
+        block->next = NULL;
+        return;
+    }
+    if(block < first_allocated){
+        block->next = first_allocated;
+        first_allocated = block;
+        return;
+    }
+    while(node < block && !(node->next == NULL || node->next > block)) {
+        node = node->next;
+    }
+    block->next = node->next;
+    node->next = block;
+}
+
+
 #if defined(FIRST_FIT)
 
 /* code specific to first fit strategy can be inserted here */
@@ -102,8 +123,7 @@ char *find_free_block(int size) {
     }
    
     addr = assign_block(memo, size);
-    memo->next=first_allocated;
-    first_allocated = memo;
+    update_allocated_list(memo);
     return addr;
 }
 
@@ -327,10 +347,10 @@ int main(int argc, char **argv){
   print_free_blocks();
 
   a = memory_alloc(10);
-  a = a+1;
-
+  b = memory_alloc(10);
+  *(a+10)='9';
   memory_free(a);
-
+  memory_free(a);
   //fprintf(stderr,"%lu\n",(long unsigned int) (memory_alloc(9)));
   return EXIT_SUCCESS;
 }
