@@ -5,6 +5,8 @@
 *.out
 *.out.expected
 .DS_Store
+leak_test
+leak_test2
 mem_alloc_test
 mem_shell
 mem_shell_sim
