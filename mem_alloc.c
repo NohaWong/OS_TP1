@@ -223,7 +223,7 @@ void memory_free(char *p){
     {
         prev_node->next = freed->next;
         if (freed->next != NULL) {
-            next_node->prev = prev_node;
+            freed->next->prev = prev_node;
         }
         prev_node->size += freed->size + sizeof(mem_free_block_t);
     }
