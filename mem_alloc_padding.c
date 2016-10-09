@@ -10,21 +10,23 @@ char memory[MEMORY_SIZE];
 
 /* Pointer to the first free block in the memory */
 mem_free_block_t *first_free;
+int metadata_size = sizeof(mem_free_block_t)
+    + (sizeof(mem_free_block_t) % MEM_ALIGNMENT > 0 ? MEM_ALIGNMENT - (sizeof(mem_free_block_t) % MEM_ALIGNMENT) : 0);
 
 
 #define ULONG(x)((long unsigned int)(x))
 #define max(x,y) (x>y?x:y)
 
 char *assign_block(mem_free_block_t *node, int size) {
-    char* result = (char*) node + sizeof(mem_free_block_t);
+    char* result = (char*) node + metadata_size;
 
     // there's enough space to create metadata for the remaining block
-    if (node->size >= size + sizeof(mem_free_block_t)) {
+    if (node->size >= size + metadata_size) {
         // must cast node into (void*) (or char*) first so that addition of pointer would increase memory address by 1 for each +1 operation
         // without casting, the increment will be sizeof(mem_free_block_t) bytes for each +1 operation, hence reaching out of bound of memory array soon
-        mem_free_block_t *new_block = (mem_free_block_t*) ((char*) node + sizeof(mem_free_block_t) + size);
+        mem_free_block_t *new_block = (mem_free_block_t*) ((char*) node + metadata_size + size);
 
-        new_block->size = node->size - sizeof(mem_free_block_t) - size;
+        new_block->size = node->size - metadata_size - size;
         new_block->prev = node->prev;
         new_block->next = node->next;
         //update of the allocated space
@@ -135,7 +137,7 @@ void memory_init(void){
 
     /* .... */
     first_free = (mem_free_block_t*) memory;
-    first_free->size = MEMORY_SIZE - sizeof(mem_free_block_t);
+    first_free->size = MEMORY_SIZE - metadata_size;
     first_free->prev = NULL;
     first_free->next = NULL;
 }
@@ -159,7 +161,7 @@ char *memory_alloc(int size){
 
 void memory_free(char *p){
     mem_free_block_t *node = first_free;
-    mem_free_block_t *freed = (mem_free_block_t*) (p - sizeof(mem_free_block_t));
+    mem_free_block_t *freed = (mem_free_block_t*) (p - metadata_size);
 
     mem_free_block_t *prev_node, *next_node;
 
@@ -211,22 +213,22 @@ void memory_free(char *p){
     // i.e. we got 26 bytes left but the request is for just 24 bytes, the 2 extra bytes isn't big enough for a metadata block,
     // then we free the allocated block immediately next to it, the leftover bytes due to previous internal fragmentation
     // aren't coalerced into the new free block
-    if ((char*) freed + freed->size + sizeof(mem_free_block_t) == (char*) next_node) // if next_node is NULL, this condition will always fail
+    if ((char*) freed + freed->size + metadata_size == (char*) next_node) // if next_node is NULL, this condition will always fail
     {
         freed->next = next_node->next;
         if (next_node->next != NULL) {
             next_node->next->prev = freed;
         }
-        freed->size += next_node->size + sizeof(mem_free_block_t);
+        freed->size += next_node->size + metadata_size;
     }
 
-    if (prev_node != NULL && (char*) prev_node + prev_node->size + sizeof(mem_free_block_t) == (char*) freed)
+    if (prev_node != NULL && (char*) prev_node + prev_node->size + metadata_size == (char*) freed)
     {
         prev_node->next = freed->next;
         if (freed->next != NULL) {
             freed->next->prev = prev_node;
         }
-        prev_node->size += freed->size + sizeof(mem_free_block_t);
+        prev_node->size += freed->size + metadata_size;
     }
 
     print_free_info(p);
