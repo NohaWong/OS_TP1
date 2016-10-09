@@ -72,11 +72,6 @@ char *find_free_block(int size) {
         node = node->next;
     }
 
-    if (result == NULL) {
-        print_error_alloc(size);
-        exit(0);
-    }
-
     return result;
 }
 
@@ -95,8 +90,7 @@ char *find_free_block(int size) {
     }
 
     if (memo == NULL) {
-        print_error_alloc(size);
-        exit(0);
+        return NULL;
     }
 
     return assign_block(memo, size);
@@ -117,8 +111,7 @@ char *find_free_block(int size) {
     }
 
     if (memo == NULL) {
-        print_error_alloc(size);
-        exit(0);
+        return NULL;
     }
 
     return assign_block(memo, size);
@@ -150,7 +143,15 @@ void memory_init(void){
 char *memory_alloc(int size){
 
     /* .... */
-    char *addr = find_free_block(size);
+    int remainder = size % MEM_ALIGNMENT;
+    int allocated_size = size + (remainder > 0 ? MEM_ALIGNMENT - remainder : 0);
+    char *addr = find_free_block(allocated_size);
+
+    if (addr == NULL) {
+        print_error_alloc(size);
+        exit(0);
+    }
+
     print_alloc_info(addr, size);
     return addr;
 
