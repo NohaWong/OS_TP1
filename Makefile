@@ -28,6 +28,9 @@ TEST_LIST += test_leak.test test_leak2.test
 
 BIN_FILES = mem_alloc_test mem_shell mem_shell_sim leak_test leak_test2
 
+mem_alloc_test_padding:mem_alloc_padding.c mem_alloc_types.h
+	$(CC) -DMAIN -DMEMORY_SIZE=2048 $(CONFIG_FLAG) $(CFLAGS) $(LDFLAGS) $< -o $@
+
 mem_alloc_test_advance:mem_alloc_advance.c mem_alloc_types.h
 	$(CC) -DMAIN -DMEMORY_SIZE=2048 $(CONFIG_FLAG) $(CFLAGS) $(LDFLAGS) $< -o $@
 

@@ -12,3 +12,4 @@ mem_shell
 mem_shell_sim
 Thumbs.db
 mem_alloc_test_advance
+mem_alloc_test_padding
