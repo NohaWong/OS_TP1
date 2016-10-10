@@ -112,7 +112,7 @@ Safety check \texttt{mem\_alloc\_advance.c}:
 \item Incorrect \texttt{free()}: as mentioned above, for the naive version, we only take into account the allocated size in allocated blocks' metadata. To detect incorrect \texttt{free()} call, we maintain a allocated list in the similar manner as free list, but without prev link in every node to keep it as simple as possible. For each \texttt{free()}, we look at the given address in the argument, minus metadata size to get the address of the beginning of metadata block. If that address could not be found in the allocated list, it is an incorrect \texttt{free()}, then triggers an error, exiting the program.
 
 \item Metadata corruption\\
-Our check for not corrupted metadata is done by computing all the allocate and free block and checking if there is no overlaps or missing things or pointer out of range in the full list.This safety check is done during all allocation and free.\\
+Our check for non-corrupted metadata is done by computing the size of all the allocated and free block and checking if the total (including metadata) equals total memory size or not. That ensures there is no overlaps in the full list. This safety check is done during all allocation and free.\\
 Test 1:\\
 \begin{lstlisting}
   char *a = memory_alloc(10);
