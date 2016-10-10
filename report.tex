@@ -135,5 +135,14 @@ Test 2:\\
 
 \end{flushleft}
 
+\begin{flushleft}
+Memory alignment \texttt{mem\_alloc\_padding.c}:
+
+
+For each allocate request, if the size is not a multiple of MEM\_ALIGNMENT, we give a block with some extra spaces (equal to \texttt{MEM\_ALIGNMENT - size \% MEM\_ALIGNMENT}) instead. If the metadata size is not a multiple of MEM\_ALIGNMENT, we add some extra space to the metadata in the same manner, and use the new total metadata size for every computation in the algorithms. With this strategy, we manage to pass all 5 given tests and our designed tests as well.
+
+
+\end{flushleft}
+
 
 \end{document}
