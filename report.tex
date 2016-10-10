@@ -104,10 +104,10 @@ now we allocate one block\\\\
 \end{itemize}
 
 \begin{flushleft}
-Safety check:
+Safety check \texttt{mem_alloc_advance.c}:
 
 \begin{enumerate}
-\item Memory leak
+\item Memory leak: before exiting, we check if the first free block size plus metadata size is equal to total memory size or not. If not, that means a leak, i.e. people forget to free the allocated block, and there will be a warning.
 
 \item Incorrect free()
 
