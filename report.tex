@@ -111,9 +111,24 @@ Safety check:
 
 \item Incorrect free()
 
-\item Metadata corruption
-
-
+\item Metadata corruption\\
+Our check for not corrupted metadata is done by computing all the allocate and free block and checking if there is no overlaps or missing things or pointer out of range in the full list.This safety check is done during all allocation and free.\\
+Test 1:\\
+\begin{lstlisting}
+  char *a = memory_alloc(10);
+  char *b = memory_alloc(10);
+  *(a+10)='9';
+  memory_free(a);
+  memory_free(a);
+\end{lstlisting}
+Test 2:\\
+\begin{lstlisting}
+  char *a = memory_alloc(10);
+  char *b = memory_alloc(10);
+  *(a+10)->size++;
+  memory_free(a);
+  memory_free(a);
+\end{lstlisting}
 
 \end{enumerate}
 
