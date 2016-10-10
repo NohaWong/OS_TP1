@@ -53,6 +53,15 @@ Our test scenarios:
 
 \begin{itemize}
 \item First Fit:
+\begin{itemize}
+\item our test firstly creates the pattern
+$|a20|f50|a30|f60|a20|$
+\item then we issue 2 allocate requests: a30 and a60, the Worst Fit would firstly try to fill the free 60-bytes block first for the a30 request, then the 60-bytes block becomes 6-bytes left (24 bytes reserved for the new metadata). Then it does not have enough memory for the \textbf{a60} request.
+\item both First Fit and Best Fit pass the previous case, the next few steps are to introduce the pattern.
+$|a20|f50|a30|a60|f20|$
+\item then we issue 3 allocate requests: a10, a10, and a20. The Best Fit tries the first a10 into the free 20 bytes block (after which the leftover didn't fit for a metadata), the next a10 into the free 50 bytes block, after which the leftover is 16 bytes due to metadata, hence does not fit for the last a20 request. The First Fit fills the free 50 bytes block first, so the free 20 bytes block is just enough for the last a20 request.
+\end{itemize}
+
 \item Best Fit:
 \item Worst Fit:
 O represent a free block and X is an allocated block each of them have a same size.
