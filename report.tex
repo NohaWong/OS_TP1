@@ -10,13 +10,27 @@
 
 \part{Structure}
 
-For the implementation we have used a linked list of free blocks.
+For the implementation we have used a doble linked list of free blocks.
 ich block (allocated or free) have a meta data composed of :
+
 \begin{itemize}
 \item one pointer to the next free block
 \item one pointer to the previous free block
-\item one value representing the size of your free block
-\end{itemize}one pointer to the next free block
+\item one value representing the size of your free block \\ \\
+\end{itemize}
+
+\begin{flushleft}
+The feature we have implemented is :
+\end{flushleft}
+
+
+\begin{itemize}
+\item allocation using First Fit management of free block
+\item allocation using Best Fit management of free block
+\item allocation using Worst Fit management of free block
+\item the safety check(Forgetting to free memory, Calling free() incorrectly, Corrupting the allocator metadata)
+\item alignement of blocks (pointer value is equal to a multiple of size)
+\end{itemize}
 
 
 
