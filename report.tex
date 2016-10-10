@@ -4,6 +4,7 @@
 \author{Noha Wong, Quoc-Trung Vuong}
 \usepackage[english]{babel}
 \usepackage{listings}
+\usepackage{array}
 \begin{document}
 \maketitle
 \newpage
@@ -54,6 +55,38 @@ Our test scenarios:
 \item First Fit:
 \item Best Fit:
 \item Worst Fit:
+O represent a free block and X is an allocated block each of them have a same size.
+
+we starting with this configuration :
+$|O|O|X|O|O|O|$"\\
+now we allocate one block\\\\
+\begin{tabular}{|l|c|r|}
+   \hline 
+   Best Fit & First Fit & Worst Fit \\
+   \hline
+   $|X|O|X|O|O|O|$ & $|X|O|X|O|O|O|$ & $|O|O|X|X|O|O|$ \\
+   \hline
+\end{tabular}
+\\
+\\then we allocate 2 blocks\\\\
+\begin{tabular}{|l|c|r|}
+   \hline 
+   Best Fit & First Fit & Worst Fit \\
+   \hline
+   $|X|O|X|X|X|O|$ & $|X|O|X|X|X|O|$ & $|X|X|X|X|O|O|$ \\
+   \hline
+\end{tabular}
+\\
+\\then we allocate an other time 2 blocks\\\\
+\begin{tabular}{|l|c|r|}
+   \hline 
+   Best Fit & First Fit & Worst Fit \\
+   \hline
+   ERROR & ERROR & $|X|X|X|X|X|X|$ \\
+   \hline
+\end{tabular}
+
+
 \end{itemize}
 
 
