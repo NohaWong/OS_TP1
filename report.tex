@@ -1,7 +1,7 @@
 \documentclass{article}
 \usepackage[utf8]{inputenc}
 \title{Memory allocator}
-\author{Noha Wong,Trung Vuong}
+\author{Noha Wong, Quoc-Trung Vuong}
 \usepackage[english]{babel}
 \usepackage{listings}
 \begin{document}
@@ -10,8 +10,10 @@
 
 \part{Structure}
 
-For the implementation we have used a doble linked list of free blocks.
-ich block (allocated or free) have a meta data composed of :
+For the implementation we have used a doubly linked list of free blocks.
+Each block (allocated or free) have a meta data composed of:
+
+(for the allocated blocks, we actually don't utilize the 2 pointers next and previous for the basic implementation without safety check, just the size to facilitate memory free)
 
 \begin{itemize}
 \item one pointer to the next free block
@@ -19,20 +21,40 @@ ich block (allocated or free) have a meta data composed of :
 \item one value representing the size of your free block \\ \\
 \end{itemize}
 
+when we free an allocated block, we put it back into the free list in a way such that the list is always sorted increasingly by the address of each node. This is to facilitate the merging procedure, by just looking up into the directly previous and next nodes of the free one.
+
 \begin{flushleft}
-The feature we have implemented is :
+The features we have implemented are:
 \end{flushleft}
 
 
 \begin{itemize}
-\item allocation using First Fit management of free block
-\item allocation using Best Fit management of free block
-\item allocation using Worst Fit management of free block
-\item the safety check(Forgetting to free memory, Calling free() incorrectly, Corrupting the allocator metadata)
-\item alignement of blocks (pointer value is equal to a multiple of size)
+\item allocation using First Fit management of free block, pass all 5 given tests
+\item allocation using Best Fit management of free block, pass all 5 given tests
+\item allocation using Worst Fit management of free block, pass all 5 given tests
+\item the safety check (Forgetting to free memory, Calling free() incorrectly, Corrupting the allocator metadata)
+\item alignment of blocks (pointer value is equal to a multiple of size)
 \end{itemize}
 
+\begin{flushleft}
+Some limitations:
+\end{flushleft}
 
+\begin{itemize}
+\item since we decide to always keep the free list sorted, adding a node back to the list is more costly and complicated, but it is easier and quicker to merge
+\item we could reduce the size for metadata by not using pointer to previous node in the free list, but that would make looking up for node and traversing to its parent more complicated (either by memorizing the last visited one or going from the beginning of the list)
+\item when the leftover size after allocating a block isn't enough for another metadata, we allocate that part into the requested block (hence some internal fragmentation), if the consecutive block is later free, we didn't manage to merge the leftover into the recently free one
+\end{itemize}
+
+\begin{flushleft}
+Our test scenarios:
+\end{flushleft}
+
+\begin{itemize}
+\item First Fit:
+\item Best Fit:
+\item Worst Fit:
+\end{itemize}
 
 
 \end{document}
