@@ -4,6 +4,9 @@
 *.o
 *.out
 *.out.expected
+*.aux
+*.log
+*.gz
 .DS_Store
 leak_test
 leak_test2
