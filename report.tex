@@ -63,6 +63,11 @@ $|a20|f50|a30|a60|f20|$
 \end{itemize}
 
 \item Best Fit:
+\begin{itemize}
+\item the test creates the pattern $|f90|a60|f30|$
+\item then we issue 2 allocate requests: a20 and a80. Both First Fit and Worst Fit will fill the free 90-bytes block for the a20, leaving a 46-bytes block behind, while Best Fit fills the free 30-bytes block first. Then both First Fit and Worst Fit doesn't have enough space left for the a80 request, while Best Fit does.
+\end{itemize}
+
 \item Worst Fit:
 O represent a free block and X is an allocated block each of them have a same size.
 
