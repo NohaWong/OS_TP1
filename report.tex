@@ -72,13 +72,13 @@ $|a20|f50|a30|a60|f20|$
 O represent a free block and X is an allocated block each of them have a same size.
 
 we starting with this configuration :
-$|O|O|X|O|O|O|$"\\
+$|OO|X|OOO|$"\\
 now we allocate one block\\\\
 \begin{tabular}{|l|c|r|}
    \hline 
    Best Fit & First Fit & Worst Fit \\
    \hline
-   $|X|O|X|O|O|O|$ & $|X|O|X|O|O|O|$ & $|O|O|X|X|O|O|$ \\
+   $|X|O|X|OOO|$ & $|X|O|X|OOO|$ & $|OO|X|X|OO|$ \\
    \hline
 \end{tabular}
 \\
@@ -87,7 +87,7 @@ now we allocate one block\\\\
    \hline 
    Best Fit & First Fit & Worst Fit \\
    \hline
-   $|X|O|X|X|X|O|$ & $|X|O|X|X|X|O|$ & $|X|X|X|X|O|O|$ \\
+   $|X|O|X|XX|O|$ & $|X|O|X|XX|O|$ & $|XX|X|X|OO|$ \\
    \hline
 \end{tabular}
 \\
@@ -96,7 +96,7 @@ now we allocate one block\\\\
    \hline 
    Best Fit & First Fit & Worst Fit \\
    \hline
-   ERROR & ERROR & $|X|X|X|X|X|X|$ \\
+   ERROR & ERROR & $|XX|X|X|XX|$ \\
    \hline
 \end{tabular}
 
