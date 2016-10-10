@@ -14,13 +14,13 @@
 For the implementation we have used a doubly linked list of free blocks.
 Each block (allocated or free) have a meta data composed of:
 
-(for the allocated blocks, we actually don't utilize the 2 pointers next and previous for the basic implementation without safety check, just the size to facilitate memory free)
-
 \begin{itemize}
 \item one pointer to the next free block
 \item one pointer to the previous free block
 \item one value representing the size of your free block \\ \\
 \end{itemize}
+
+(for the allocated blocks, we actually don't utilize the 2 pointers next and previous for the basic implementation without safety check, just the size to facilitate memory free)
 
 when we free an allocated block, we put it back into the free list in a way such that the list is always sorted increasingly by the address of each node. This is to facilitate the merging procedure, by just looking up into the directly previous and next nodes of the free one.
 
@@ -104,12 +104,12 @@ now we allocate one block\\\\
 \end{itemize}
 
 \begin{flushleft}
-Safety check \texttt{mem_alloc_advance.c}:
+Safety check \texttt{mem\_alloc\_advance.c}:
 
 \begin{enumerate}
 \item Memory leak: before exiting, we check if the first free block size plus metadata size is equal to total memory size or not. If not, that means a leak, i.e. people forget to free the allocated block, and there will be a warning.
 
-\item Incorrect free()
+\item Incorrect \texttt{free()}: as mentioned above, for the naive version, we only take into account the allocated size in allocated blocks' metadata. To detect incorrect \texttt{free()} call, we maintain a allocated list in the similar manner as free list, but without prev link in every node to keep it as simple as possible. For each \texttt{free()}, we look at the given address in the argument, minus metadata size to get the address of the beginning of metadata block. If that address could not be found in the allocated list, it is an incorrect \texttt{free()}, then triggers an error, exiting the program.
 
 \item Metadata corruption\\
 Our check for not corrupted metadata is done by computing all the allocate and free block and checking if there is no overlaps or missing things or pointer out of range in the full list.This safety check is done during all allocation and free.\\
